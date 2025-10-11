@@ -1,0 +1,12 @@
+fskenv/
+__pycache__/
+*.pyc
+.env
+.env.*
+.DS_Store
+Thumbs.db
+database/embeddings.npy
+database/product_ids.npy
+*.log
+.vscode/
+.idea/
