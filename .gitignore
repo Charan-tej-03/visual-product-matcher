@@ -12,8 +12,3 @@ database/product_ids.npy
 .vscode/
 .idea/
 *.npy
-
-# frontend = react
-node_modules/
-build/
-dist/
