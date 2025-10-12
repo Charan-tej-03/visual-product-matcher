@@ -1,3 +1,4 @@
+# backend - flask
 fskenv/
 __pycache__/
 *.pyc
@@ -10,3 +11,9 @@ database/product_ids.npy
 *.log
 .vscode/
 .idea/
+*.npy
+
+# frontend = react
+node_modules/
+build/
+dist/
