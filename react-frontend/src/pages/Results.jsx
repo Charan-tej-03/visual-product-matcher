@@ -1,39 +1,44 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import Navbar from "../components";
+import Navbar from "../components/Navbar";
+import ProductCard from "../components/ProductCard";
 
 export default function Results() {
   const location = useLocation();
   const navigate = useNavigate();
   const results = location.state?.results || [];
+  const queryPreview = location.state?.queryPreview || null;
 
   return (
     <>
       <Navbar />
-      <div className="max-w-6xl mx-auto mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
-        {results.length === 0 ? (
-          <p>No results. Try uploading another image.</p>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {results.map((item) => (
-              <div key={item.id} className="border rounded-lg p-2 shadow hover:shadow-lg transition">
-                <img
-                  src={`http://127.0.0.1:5000/static/images/${item.image_filename}`}
-                  alt={item.name}
-                  className="w-full h-48 object-cover rounded"
-                />
-                <h3 className="mt-2 font-semibold">{item.name}</h3>
-                <p className="text-gray-500 text-sm">{(item.score * 100).toFixed(1)}% match</p>
-              </div>
-            ))}
+      <div className="min-h-screen bg-gray-100 py-8 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="mb-6 flex items-center gap-4">
+            <button onClick={() => navigate(-1)} className="text-sm text-blue-600 hover:underline">
+              ← Back
+            </button>
+            <h2 className="text-2xl font-semibold">Search Results</h2>
           </div>
-        )}
-        <button
-          onClick={() => navigate("/")}
-          className="mt-6 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-        >
-          Back to Home
-        </button>
+
+          {queryPreview && (
+            <div className="mb-6">
+              <h3 className="text-sm text-gray-600 mb-2">Query image</h3>
+              <div className="w-40 h-40 border rounded overflow-hidden">
+                <img src={queryPreview} alt="query" className="w-full h-full object-contain" />
+              </div>
+            </div>
+          )}
+
+          {results.length === 0 ? (
+            <p>No results found.</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {results.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
