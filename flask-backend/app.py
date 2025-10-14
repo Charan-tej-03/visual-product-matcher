@@ -106,12 +106,16 @@ def search():
         results = []
         for idx in idx_sorted:
             score = float(sims[idx])
+            
             if score < min_score:
                 continue
+            
             prod_id = int(product_ids[idx])
             p = session.query(Product).filter_by(id=prod_id).first()
+            
             if not p:
                 continue
+            
             results.append({
                 "id": p.id,
                 "name": p.name,
@@ -120,6 +124,7 @@ def search():
                 "image_url": f"/images/{p.image_filename}",
                 "score": round(score, 4)
             })
+            
             if len(results) >= k:
                 break
 
@@ -140,15 +145,20 @@ def add_product():
     try:
         if "image" not in request.files:
             return jsonify({"error":"No image file provided"}), 400
+        
         image = request.files["image"]
+        
         if not allowed_file(image.filename):
             return jsonify({"error":"Invalid file type"}), 400
+        
         name = request.form.get("name")
         category = request.form.get("category")
         price = request.form.get("price", None)
         description = request.form.get("description", None)
+        
         if not name or not category or price is None:
             return jsonify({"error":"Provide name, category and price"}), 400
+        
         filename = secure_filename(image.filename)
         save_path = os.path.join(STATIC_IMAGES, filename)
         image.save(save_path)
@@ -160,15 +170,19 @@ def add_product():
         # compute embedding and append
         emb = embedder.embed_pil(Image.open(save_path))
         global embeddings, product_ids
+        
         if embeddings is None:
             embeddings = emb.reshape(1,-1)
             product_ids = np.array([p.id])
         else:
             embeddings = np.vstack([embeddings, emb.reshape(1,-1)])
             product_ids = np.append(product_ids, p.id)
+    
         np.save(EMBED_PATH, embeddings)
         np.save(IDS_PATH, product_ids)
+        
         return jsonify({"success": True, "id": p.id})
+    
     except Exception as e:
         session.rollback()
         return jsonify({"error": str(e)}), 500

@@ -2,7 +2,7 @@ import axios from "axios";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
-export async function searchImage(file, imageUrl, k = 5, min_score = 0.25) {
+export async function searchImage(file, imageUrl, k = 3, min_score = 0.25) {
   const formData = new FormData();
   if (file) {
     formData.append("image", file);
