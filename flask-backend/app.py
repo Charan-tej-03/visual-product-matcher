@@ -14,6 +14,8 @@ from models.embedder import Embedder
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from sklearn.metrics.pairwise import cosine_similarity
+import requests
+from io import BytesIO
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -74,32 +76,53 @@ def serve_image(filename):
 @app.route("/search", methods=["POST"])
 def search():
     try:
-        if "image" not in request.files:
-            return jsonify({"error":"Upload an image file (multipart/form-data with key 'image')"}), 400
-        img = Image.open(request.files["image"].stream).convert("RGB")
-        q_emb = embedder.embed_pil(img).reshape(1,-1)
+        img = None
+
+        # Case 1: File upload
+        if "image" in request.files and request.files["image"].filename != "":
+            img = Image.open(request.files["image"].stream).convert("RGB")
+
+        # Case 2: Image URL
+        elif "image_url" in request.form and request.form["image_url"].strip() != "":
+            image_url = request.form["image_url"].strip()
+            resp = requests.get(image_url, timeout=10)
+            if resp.status_code != 200:
+                return jsonify({"error": "Failed to fetch image from URL"}), 400
+            img = Image.open(BytesIO(resp.content)).convert("RGB")
+
+        else:
+            return jsonify({"error": "Provide an image file or image_url"}), 400
+
+        # Embedding logic remains the same
+        q_emb = embedder.embed_pil(img).reshape(1, -1)
         if embeddings is None:
-            return jsonify({"error":"Embeddings not built. Run precompute_embeddings.py"}), 500
+            return jsonify({"error": "Embeddings not built. Run precompute_embeddings.py"}), 500
+
         sims = cosine_similarity(q_emb, embeddings)[0]
         k = int(request.args.get("k", 10))
         min_score = float(request.args.get("min_score", 0.0))
         idx_sorted = sims.argsort()[::-1]
+
         results = []
         for idx in idx_sorted:
             score = float(sims[idx])
-            if score < min_score: continue
+            if score < min_score:
+                continue
             prod_id = int(product_ids[idx])
             p = session.query(Product).filter_by(id=prod_id).first()
-            if not p: continue
+            if not p:
+                continue
             results.append({
                 "id": p.id,
                 "name": p.name,
                 "category": p.category,
                 "price": p.price,
                 "image_url": f"/images/{p.image_filename}",
-                "score": round(score,4)
+                "score": round(score, 4)
             })
-            if len(results) >= k: break
+            if len(results) >= k:
+                break
+
         return jsonify(results)
     except Exception as e:
         return jsonify({"error": str(e)}), 500

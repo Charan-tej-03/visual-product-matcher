@@ -1,14 +1,26 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:5000";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
-export async function searchImage(file, k = 5, min_score = 0.25) {
-  const form = new FormData();
-  form.append("image", file);
-  const resp = await axios.post(`${API_BASE}/search?k=${k}&min_score=${min_score}`, form, {
-    headers: { "Content-Type": "multipart/form-data" },
+export async function searchImage(file, imageUrl, k = 5, min_score = 0.25) {
+  const formData = new FormData();
+  if (file) {
+    formData.append("image", file);
+  } else if (imageUrl && imageUrl.trim() !== "") {
+    formData.append("image_url", imageUrl.trim());
+  }
+
+  const res = await fetch(`${import.meta.env.VITE_API_BASE}/search?k=${k}&min_score=${min_score}`, {
+    method: "POST",
+    body: formData,
   });
-  return resp.data;
+
+  if (!res.ok) {
+    const errData = await res.json();
+    throw new Error(errData.error || "Search failed");
+  }
+
+  return await res.json();
 }
 
 export async function listProducts() {
