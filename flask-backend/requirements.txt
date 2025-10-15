@@ -10,6 +10,7 @@ flask-cors==6.0.1
 fsspec==2025.9.0
 ftfy==6.3.1
 greenlet==3.2.4
+gunicorn==23.0.0
 idna==3.10
 itsdangerous==2.2.0
 Jinja2==3.1.6
