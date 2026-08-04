@@ -12,8 +12,3 @@ By uploading a photo or pasting an image URL, the system identifies and returns 
 
 2. Add products to the db.
    <img width="1581" height="879" alt="image" src="https://github.com/user-attachments/assets/8e0808f7-fb51-4644-9950-76dd9aaa2caa" />
-
-
-
-
-
